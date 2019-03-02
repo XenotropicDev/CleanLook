@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_Load">
+  <ribbon>
+    <tabs>
+      <tab idMso="TabAddIns">
+        <group id="ContentGroup" label="CleanLook Settings">
+          <checkBox id="chkCleanStationary" label="Stationary Cleaning"
+               screentip="Text" 
+               onAction="CleanStationaryChecked"
+               getPressed="GetStationaryPressed"
+               supertip="Enables and disables the removal of background images"/>
+          <checkBox id="chkCleanFonts" label="Font Cleaning"
+               screentip="Text"
+               onAction="CleanFontsChecked"
+               getPressed="GetFontsPressed"
+               supertip="Enables and disables the cleaning of fonts in the list"/>
+          <button id="buttonFontSettings" label="Font Settings"
+               screentip="Text" onAction="OnSettingsButton"
+               supertip="Configuration of font cleaning settings"
+                  imageMso="Piggy"/>
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>
+

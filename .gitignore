@@ -3,3 +3,9 @@
 ################################################################################
 
 /bak
+/.vs/CleanLook/v14
+/CleanLook/bin
+/CleanLook/obj/Debug
+/CleanLook/obj/Release
+/CleanLook/publish
+/packages/HtmlAgilityPack.1.9.1/HtmlAgilityPack.1.9.1.nupkg
