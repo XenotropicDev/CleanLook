@@ -1,37 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
-using Outlook = Microsoft.Office.Interop.Outlook;
-using Office = Microsoft.Office.Core;
-//using System.Windows.Forms;
-using HtmlAgilityPack;
-using System.IO;
-using System.Text.RegularExpressions;
-
-namespace CleanLook
+﻿namespace CleanLook
 {
+    using System;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+    using HtmlAgilityPack;
+    using Outlook = Microsoft.Office.Interop.Outlook;    
+
     public partial class ThisAddIn
     {
-        Outlook.Explorer currentExplorer = null;
+        private Outlook.Explorer currentExplorer = null;
+
+        protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
+        {
+            return new CleanLookRibbon();
+        }
+        
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
-            currentExplorer = this.Application.ActiveExplorer();
-            currentExplorer.SelectionChange += new Outlook
-                .ExplorerEvents_10_SelectionChangeEventHandler
-                (CurrentExplorer_Event);
+            this.currentExplorer = this.Application.ActiveExplorer();
+            this.currentExplorer.SelectionChange += new Outlook.ExplorerEvents_10_SelectionChangeEventHandler(this.CurrentExplorer_Event);
         }
 
         private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
         {
             // Note: Outlook no longer raises this event. If you have code that 
             //    must run when Outlook shuts down, see http://go.microsoft.com/fwlink/?LinkId=506785
-        }
-
-        protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
-        {
-            return new CleanLookRibbon();
         }
 
         private void CurrentExplorer_Event()
@@ -42,10 +35,10 @@ namespace CleanLook
             {
                 if (this.Application.ActiveExplorer().Selection.Count > 0)
                 {
-                    Object selObject = this.Application.ActiveExplorer().Selection[1];
+                    object selObject = this.Application.ActiveExplorer().Selection[1];
                     if (selObject is Outlook.MailItem)
                     {
-                        Outlook.MailItem mailItem = (selObject as Outlook.MailItem);
+                        Outlook.MailItem mailItem = selObject as Outlook.MailItem;
 
                         var sent = mailItem.Sent;
                         var properties = mailItem.ItemProperties;
@@ -54,12 +47,13 @@ namespace CleanLook
                         HtmlDocument hdoc = new HtmlDocument();
                         hdoc.LoadHtml(mailItem.HTMLBody);
                         var bodyNode = hdoc.DocumentNode.SelectSingleNode("/html[1]/body[1]");
+                        var headStyleNode = hdoc.DocumentNode.SelectSingleNode("/html[1]/head[1]/style[1]");
 
                         bool toggleSave = false;
 
                         if (Properties.Settings.Default.CleanStationary && bodyNode != null)
                         {
-                            //TODO Allow these to be set by the user?
+                            // TODO Allow these to be set by the user?
                             string[] listOfAttributesToRemove = { "bgcolor", "background" };
                             foreach (string bodyAttribute in listOfAttributesToRemove)
                             {
@@ -73,20 +67,29 @@ namespace CleanLook
                         }
 
                         if (Properties.Settings.Default.CleanFonts)
-                        {
-                            //TODO: maybe there should be a 1:1 mapping?                        
+                        {                            
                             string replacementFont = Properties.Settings.Default.ReplacementFont;
                             var listOfFontsToReplace = Properties.Settings.Default.ListOfFonts;
+                            string regexMatchString = string.Join("|", listOfFontsToReplace.Cast<string>());
 
-                            //Replace Fonts according to user settings
+                            // Replace Fonts according to user settings
                             if (listOfFontsToReplace.Count > 0 && replacementFont.Length > 0)
                             {
-                                //var fontNodes = hdoc.DocumentNode.SelectNodes("//*[contains(@style, 'font')]");
+                                // Clean fonts from CSS header
+                                string tempInnerHmtl = Regex.Replace(headStyleNode.InnerHtml, regexMatchString, replacementFont);
+                                if (!tempInnerHmtl.Equals(headStyleNode.InnerHtml))
+                                {
+                                    headStyleNode.InnerHtml = tempInnerHmtl;
+                                    toggleSave = true;
+                                }
+
+                                // Clean fonts from body style tags                                
                                 string xpathcontains = string.Empty;
                                 foreach (string font in listOfFontsToReplace)
                                 {
                                     xpathcontains += (xpathcontains.Length > 0) ? $" or contains (@style, '{font}')" : $"contains (@style, '{font}')";
                                 }
+                                ////var fontNodes = hdoc.DocumentNode.SelectNodes("//*[contains(@style, 'font')]");
                                 var fontNodes = hdoc.DocumentNode.SelectNodes($"//*[{xpathcontains}]");
                                 if (fontNodes != null)
                                 {
@@ -96,7 +99,7 @@ namespace CleanLook
                                         {
                                             foreach (var attr in node.Attributes)
                                             {
-                                                attr.Value = Regex.Replace(attr.Value, String.Join("|", listOfFontsToReplace.Cast<string>()), replacementFont);
+                                                attr.Value = Regex.Replace(attr.Value, regexMatchString, replacementFont);
                                                 toggleSave = true;
                                             }
                                         }
@@ -105,32 +108,13 @@ namespace CleanLook
                             }
                         }
 
-                        //Save the HTML back to the body if we made any changes.
+                        // Save the HTML back to the body if we made any changes.
                         if (toggleSave)
                         {
                             string html = hdoc.DocumentNode.WriteContentTo();
                             mailItem.HTMLBody = html;                            
                         }
-
-                    }
-                    else if (selObject is Outlook.ContactItem)
-                    {
-                        Outlook.ContactItem contactItem = (selObject as Outlook.ContactItem);                        
-                    }
-                    else if (selObject is Outlook.AppointmentItem)
-                    {
-                        Outlook.AppointmentItem apptItem = (selObject as Outlook.AppointmentItem);
-
-                    }
-                    else if (selObject is Outlook.TaskItem)
-                    {
-                        Outlook.TaskItem taskItem = (selObject as Outlook.TaskItem);                        
-                    }
-                    else if (selObject is Outlook.MeetingItem)
-                    {
-                        Outlook.MeetingItem meetingItem = (selObject as Outlook.MeetingItem);
-                        
-                    }
+                    }                    
                 }                
             }
             catch (Exception ex)
@@ -139,8 +123,7 @@ namespace CleanLook
                 {
                     System.Windows.Forms.MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
                 }
-            }
-            
+            }            
         }
 
         #region VSTO generated code

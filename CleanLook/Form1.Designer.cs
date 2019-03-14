@@ -34,10 +34,10 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.btnAddFont = new System.Windows.Forms.Button();
-            this.txtAdd = new System.Windows.Forms.TextBox();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // txtReplacementFont
@@ -82,13 +82,6 @@
             this.btnAddFont.UseVisualStyleBackColor = true;
             this.btnAddFont.Click += new System.EventHandler(this.button1_Click);
             // 
-            // txtAdd
-            // 
-            this.txtAdd.Location = new System.Drawing.Point(12, 60);
-            this.txtAdd.Name = "txtAdd";
-            this.txtAdd.Size = new System.Drawing.Size(122, 20);
-            this.txtAdd.TabIndex = 5;
-            // 
             // btnSave
             // 
             this.btnSave.Location = new System.Drawing.Point(267, 177);
@@ -120,15 +113,24 @@
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(12, 58);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(122, 21);
+            this.comboBox1.Sorted = true;
+            this.comboBox1.TabIndex = 9;
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(354, 208);
+            this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.btnRemove);
             this.Controls.Add(this.btnSave);
-            this.Controls.Add(this.txtAdd);
             this.Controls.Add(this.btnAddFont);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -150,9 +152,9 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button btnAddFont;
-        private System.Windows.Forms.TextBox txtAdd;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnRemove;
         private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.ComboBox comboBox1;
     }
 }
